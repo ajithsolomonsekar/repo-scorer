@@ -2,6 +2,7 @@ package com.ajith.reposcorer.controller;
 
 import com.ajith.reposcorer.dto.RepositoryScoringResponse;
 import com.ajith.reposcorer.dto.RepositorySearchRequest;
+import com.ajith.reposcorer.service.RepositorySearchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class RepositoryScoringController
 {
+
+    private final RepositorySearchService repositorySearchService;
+
+
     @PostMapping("/search")
     public ResponseEntity<RepositoryScoringResponse> searchRepositories(
         @Valid @RequestBody RepositorySearchRequest request)
@@ -26,7 +31,7 @@ public class RepositoryScoringController
             "Received search request: language={}, createdAfter={}",
             request.getLanguage(), request.getCreatedAfter());
 
-        RepositoryScoringResponse response = new RepositoryScoringResponse();
+        RepositoryScoringResponse response = repositorySearchService.searchAndScoreRepositories(request);
 
         log.info("Returning {} scored repositories", response);
         return ResponseEntity.ok(response);
