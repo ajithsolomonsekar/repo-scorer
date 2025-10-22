@@ -17,6 +17,7 @@ public class RepositoryScoringResponse
     private SearchMetadata searchMetadata;
     private List<ScoredRepository> repositories;
     private Integer totalCount;
+    private Boolean incompleteResults;
     private Integer returnedCount;
     private LocalDateTime scoredAt;
 
