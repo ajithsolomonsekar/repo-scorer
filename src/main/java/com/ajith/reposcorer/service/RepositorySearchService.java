@@ -36,13 +36,15 @@ public class RepositorySearchService
         int totalCount = searchResponse.getTotalCount();
         boolean incompleteResults = searchResponse.getIncompleteResults();
 
-        log.info("Found {} repositories from GitHub (total matching: {}, incomplete: {})", repositories.size(), totalCount, incompleteResults);
+        if (repositories.isEmpty())
+        {
+            return repositoryMapper.toRepositoryScoringResponse(request, List.of(), totalCount, incompleteResults);
+        }
 
         List<ScoredRepository> scoredRepositories = repositoryScoringService.scoreAndMapRepository(repositories);
-
         log.debug("Scored and sorted {} repositories", scoredRepositories.size());
 
         return repositoryMapper.toRepositoryScoringResponse(request, scoredRepositories, totalCount, incompleteResults);
     }
-
 }
+
