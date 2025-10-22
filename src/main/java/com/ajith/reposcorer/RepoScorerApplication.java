@@ -2,11 +2,16 @@ package com.ajith.reposcorer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
-public class RepoScorerApplication {
-
-    public static void main(String[] args) {
+@EnableCaching
+@EnableRetry
+public class RepoScorerApplication
+{
+    public static void main(String[] args)
+    {
         SpringApplication.run(RepoScorerApplication.class, args);
     }
 }

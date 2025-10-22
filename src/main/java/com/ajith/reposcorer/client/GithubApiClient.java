@@ -9,6 +9,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -23,8 +25,13 @@ public class GithubApiClient
     private final GithubProperties githubProperties;
 
 
+    @Retryable(
+        retryFor = GithubApiException.class,
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 1000)
+    )
     @Cacheable(value = "githubSearches", key = "#language + '-' + #createdAfter + '-' + #maxResults")
-    public List<GithubRepository> searchRepositories(
+    public GithubSearchResponse searchRepositories(
         String language,
         LocalDate createdAfter,
         Integer maxResults)
@@ -42,7 +49,7 @@ public class GithubApiClient
                 .retrieve()
                 .body(GithubSearchResponse.class);
 
-            return handleResponse(response);
+            return sanitiseResponse(response);
 
         }
         catch (RestClientResponseException e)
@@ -57,19 +64,25 @@ public class GithubApiClient
     }
 
 
-    private List<GithubRepository> handleResponse(GithubSearchResponse response)
+    private GithubSearchResponse sanitiseResponse(GithubSearchResponse response)
     {
-        if (response == null || response.getItems() == null)
+        if (response == null)
         {
-            log.warn("GitHub API returned null response");
-            return List.of();
+            log.warn("GitHub API returned a null response body. Returning an empty, incomplete result.");
+            return new GithubSearchResponse(0, true, List.of());
         }
 
-        log.info(
-            "GitHub API returned {} repositories (total: {})",
-            response.getItems().size(), response.getTotalCount());
+        List<GithubRepository> items = response.getItems() != null ? response.getItems() : List.of();
+        Integer totalCount = response.getTotalCount() != null ? response.getTotalCount() : 0;
+        boolean incompleteResults = response.getIncompleteResults() != null && response.getIncompleteResults();
 
-        return response.getItems();
+        log.info(
+            "GitHub API returned {} repositories (total: {}, incomplete: {})",
+            items.size(),
+            totalCount,
+            incompleteResults);
+
+        return new GithubSearchResponse(totalCount, incompleteResults, items);
     }
 
 
