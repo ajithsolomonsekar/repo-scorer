@@ -3,8 +3,10 @@ package com.ajith.reposcorer.mapper;
 import com.ajith.reposcorer.client.dto.GithubRepository;
 import com.ajith.reposcorer.dto.RepositoryScoringResponse;
 import com.ajith.reposcorer.dto.RepositorySearchRequest;
+import com.ajith.reposcorer.dto.ScoreBreakdown;
 import com.ajith.reposcorer.dto.ScoreResult;
 import com.ajith.reposcorer.dto.ScoredRepository;
+import com.ajith.reposcorer.dto.SearchMetadata;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -25,7 +27,7 @@ public class RepositoryMapper
             .updatedAt(githubRepository.getUpdatedAt())
             .score(scoreResult.getTotalScore())
             .scoreBreakdown(
-                ScoredRepository.ScoreBreakdown.builder()
+                ScoreBreakdown.builder()
                     .starsScore(scoreResult.getStarsScore())
                     .forksScore(scoreResult.getForksScore())
                     .recencyScore(scoreResult.getRecencyScore())
@@ -42,7 +44,7 @@ public class RepositoryMapper
     )
     {
         return RepositoryScoringResponse.builder()
-            .searchMetadata(RepositoryScoringResponse.SearchMetadata.builder()
+            .searchMetadata(SearchMetadata.builder()
                 .language(request.getLanguage())
                 .createdAfter(request.getCreatedAfter())
                 .build())
